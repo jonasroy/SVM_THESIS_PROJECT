@@ -5,3 +5,9 @@ Note-to-self
             import sys #https://jakevdp.github.io/blog/2017/12/05/installing-python-packages-from-jupyter/
             !{sys.executable} -m pip install [package]
 
+3. Find a way to mash together datasets. The data is 2d and the labels are 1d. 
+4. Ways might work for decision tree: 
+    - Change the labels for the data sets for one vs rest or 1v1. 
+    - Change of the prorization of the classes. 
+    - Make different models
+    - Mash them together to one model or something. 
