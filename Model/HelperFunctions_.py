@@ -2,6 +2,7 @@ from sklearn import svm
 import scipy.io
 import numpy as np
 import os 
+import copy
 
 def create_hyper_image(dataset): 
     #Insperation from: https://www.youtube.com/watch?v=Yu6NrxiV91Y
@@ -27,6 +28,15 @@ def split_dataset_paths(dir_path = "", file_types = []):
 
     return splited_paths 
 
+def OneClass(labeled_data, class_value=0): 
+    # Not changing original data 
+    lb = [[]*len(labeled_data)]
+    for i in range(len(labeled_data)): 
+        for j in range(len(labeled_data[0])):
+             lb[i].append(labeled_data[i][j])
+    #Making the labeled data just the one class. 
+    for i in range(len(ld)): 
+        for j in range(len(ld[0])): 
+            if(ld[i][j] != class_value): 
+                ld[i][j] = 9
 
-def SvmDesicionTree(): 
-    
