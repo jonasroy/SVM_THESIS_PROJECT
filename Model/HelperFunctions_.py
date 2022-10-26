@@ -3,6 +3,7 @@ import scipy.io
 import numpy as np
 import os 
 import copy
+from sklearn import preprocessing
 
 def create_hyper_image(dataset): 
     #Insperation from: https://www.youtube.com/watch?v=Yu6NrxiV91Y
@@ -137,9 +138,14 @@ def combinePictures(data1, labels1, data2, labels2):
         combinded_labels.append(labels2[i])
 
     return combinded_data, combinded_labels
-    
+
 
 def combineModels(models, final_estimator): 
+
+    """
+    Combine multiple sklearn models in too one.  
+    """
+
     from sklearn.ensemble import StackingClassifier
     stack_models = StackingClassifier(estimators=models)
     return stack_models
@@ -174,3 +180,81 @@ def namesOnLabels(labels, labels_name):
         labels_with_names.append(X_labels)  
     return np.array(labels_with_names)
 
+def classesInLabels(labels): 
+    try: 
+        classes_ = []
+        for i in range(len(labels)): 
+            for j in range(len(labels[0])):
+                if(not(labels[i][j] in classes_)): 
+                    classes_.append(labels[i][j])
+        return classes_
+    except: 
+        classes = []
+        for i in range(len(labels)): 
+             if(not(labels[i] in classes_)): 
+                    classes_.append(labels[i])
+        return classes_ 
+
+def combineLabelClasses(labels, combining_classes): 
+    """
+    Combine the lables. example the three species and water. 
+    """
+    new_labels = []
+    labels_classes = classesInLabels(labels)
+    
+    new_class = combining_classes[0]
+
+    new_classes = []
+
+    for i in range(len(labels_classes)):
+        if(labels_classes[i] in combining_classes): 
+            new_classes.append(new_class)
+        else: 
+            if(labels_classes[i] < new_class):
+                new_classes.append(labels_classes[i])
+            else: 
+                new_classes.append(labels_classes[i] - len(combining_classes) + 1)
+        
+    for i in range(len(labels)): 
+        x_labels = []
+        for j in range(len(labels[0])): 
+            x_labels.append(new_classes[labels[i][j]])
+        new_labels.append(x_labels)
+
+    return np.array(new_labels)
+
+
+def flipData(data): 
+
+    data_flipped = []
+
+
+    for i in range(len(data[0])): 
+        x_data = []
+        for j in range(len(data)): 
+            x_data.append(data[j][i])
+        data_flipped.append(x_data)
+
+    return np.array(data_flipped)
+
+
+def reshape_sj(data): 
+    """
+    Used to reshape the datasets samson and jasper.
+    """
+
+    reshaped_data_buffer = []
+    pixel_dim = int(np.sqrt(len(data[0])))
+
+    for i in range(len(data)):
+        reshaped_data_buffer.append(np.reshape(np.array(data[i]), (pixel_dim, pixel_dim)))
+
+    reshaped_data = []
+
+    for i in range(len(reshaped_data_buffer[0])): 
+        X_data = []
+        for j in range(len(reshaped_data_buffer)): 
+            X_data.append(reshaped_data_buffer[j][i])
+        reshaped_data.append(X_data)
+
+    return np.array(reshaped_data)
