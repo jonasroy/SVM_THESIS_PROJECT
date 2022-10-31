@@ -187,13 +187,13 @@ def classesInLabels(labels):
             for j in range(len(labels[0])):
                 if(not(labels[i][j] in classes_)): 
                     classes_.append(labels[i][j])
-        return classes_
+        return np.sort(classes_)
     except: 
         classes = []
         for i in range(len(labels)): 
              if(not(labels[i] in classes_)): 
                     classes_.append(labels[i])
-        return classes_ 
+        return np.sort(classes_) 
 
 def combineLabelClasses(labels, combining_classes): 
     """
@@ -258,3 +258,63 @@ def reshape_sj(data):
         reshaped_data.append(X_data)
 
     return np.array(reshaped_data)
+
+
+def SeperateDataLabels(data,labels, seperation): 
+
+    train_data = copy.deepcopy(data)
+    train_labels = copy.deepcopy(labels)
+
+    #Check the labels and the seperation have the same number of classes or not 
+    # Will remove the classes not in the seperation array. 
+    
+    if(len(seperation) == 2): 
+
+        classesInSeperation = []
+
+        for i in range(len(seperation)): 
+            for j in range(len(seperation[i])): 
+                if(not(seperation[i][j] in classesInSeperation)): 
+                    classesInSeperation.append(seperation[i][j])
+
+        classesInSeperation.sort()
+        cIL = classesInLabels(labels)
+
+        if(not(classesInSeperation == cIL)): 
+            for i in range(len(cIL)): 
+                if(not(cIL[i] in classesInSeperation)):
+                    print(cIL[i])
+                    train_data = train_data[train_labels != cIL[i]]
+                    train_labels = train_labels[train_labels != cIL[i]]
+
+        for i in range(len(seperation)): 
+            for j in range(len(seperation[i])):
+                if(seperation[i][j] != min(seperation[i])):
+                    
+                    train_labels[train_labels == seperation[i][j]] = min(seperation[i])
+        
+        return train_data, train_labels
+        
+    else: 
+        print("The seperation needs to be 2 in length. For 1v1 classification")
+        return -1
+
+
+#seperation = {0 : [[1,2,3], [4,5,6]] , 1 : [[[1,2], [3]],[[4], [5,6]]]}
+
+def SvmDesionTree(data, labels, tree_branches):
+    """
+    Every branch in the SVM Desion Tree is aimed to be 1v1 classification. 
+    """
+
+    n_svm_models = len(tree_branches[len(tree_branches)]) + 1 #Need to find out the amount of models to be added to array 
+    svm_models = []
+
+    return 0 
+
+def combineResults(): 
+    """
+    Combine the result from the desion tree. Should be automated. 
+    """
+    
+    return 0 
