@@ -22,14 +22,13 @@ def SeperateDataLabels(data,labels, seperation):
 
         classesInSeperation.sort()
         classesInSeperation = np.array(classesInSeperation)
-        cIL = classesInLabels(labels)
+        cIL = np.array(classesInLabels(labels))
 
         #Checks if the seperation and the labels have same amount of classes. If not return -1 ????
-        if(not((classesInSeperation == cIL).all())): 
+        if(not(np.array_equal(cIL, classesInSeperation))): 
 
             for i in range(len(cIL)): 
                 if(not(cIL[i] in classesInSeperation)):
-                    print(cIL[i])
                     train_data = train_data[train_labels != cIL[i]]
                     train_labels = train_labels[train_labels != cIL[i]]
 
@@ -44,66 +43,6 @@ def SeperateDataLabels(data,labels, seperation):
     else: 
         print("The seperation needs to be 2 in length. For 1v1 classification")
         return -1
-
-
-def combineLabels(predicted_labels, tree_branch): 
-
-    pl = copy.deepcopy(predicted_labels)
-    """
-    Combine the result from the desion tree. Should be automated. 
-    """
-    #if(len(pl) == len(tree_branch)): 
-    for i in range(len(pl)-2,0,-1): 
-        for j in range(len(pl[i])): 
-            for k in range(len(tree_branch[i][j])): 
-                if([min(tree_branch[i][j][k])] in tree_branch[i+1][j]):
-
-                    yout = pl[i][j] 
-                    yout_sub_class = pl[i+1][j]
-
-                    class_diff = np.abs(len(yout[yout == min(tree_branch[i][j][k])]) - len(yout_sub_class))
-                    for x in range(len(yout)): 
-                        if(yout[x] == min(tree_branch[i][j][k])):
-                            if(class_diff < len(yout_sub_class)):
-                                yout[x] = yout_sub_class[class_diff] 
-                                class_diff += 1
-                    pl[i][j] = yout
-
-    #Collecting the labels from the second branch layer to the first layer. ¨
-    #Cobime the two second layers to the final labeling. 
-    
-    yout_sub_1 = pl[1][0]
-    yout_sub_2 = pl[1][1]
-    yout = pl[0]
-
-    if(yout_sub_1 == []): 
-        class_diff = np.abs(len(yout[yout == min(tree_branch[0][1])]) - len(yout_sub_2))
-        for x in range(len(yout)): 
-            if(yout[x] == min(tree_branch[0][1])):
-                if(class_diff < len(yout_sub_2)):
-                    yout[x] = yout_sub_2[class_diff] 
-                    class_diff += 1
-
-    elif(yout_sub_2 == []): 
-        class_diff = np.abs(len(yout[yout == min(tree_branch[0][0])]) - len(yout_sub_1))
-        for x in range(len(yout)): 
-            if(yout[x] == min(tree_branch[0][0])):
-                if(class_diff < len(yout_sub_1)):
-                    yout[x] = yout_sub_1[class_diff] 
-                    class_diff += 1
-
-    else:
-        count_sub_1 = 0 
-        count_sub_2 = 0 
-        for x in range(len(yout)): 
-            if(yout[x] == min(tree_branch[0][0])):
-                    yout[x] = yout_sub_1[count_sub_1] 
-                    count_sub_1 += 1
-            if(yout[x] == min(tree_branch[0][1])): 
-                    yout[x] = yout_sub_1[count_sub_2] 
-                    count_sub_2 += 1
-
-    return yout
 
 
 
@@ -204,7 +143,75 @@ def SvmBranchModelPredict(data_and_labels_branches, svm_branch_models):
 
     return predicted_branch_labels
 
+def combineLabels(predicted_labels, tree_branch): 
 
+    pl = copy.deepcopy(predicted_labels)
+    """
+    Combine the result from the desion tree. Should be automated. 
+    """
+    #if(len(pl) == len(tree_branch)): 
+    for i in range(len(pl)-2,0,-1): 
+        for j in range(len(pl[i])): 
+            for k in range(len(tree_branch[i][j])): 
+                if([min(tree_branch[i][j][k])] in tree_branch[i+1][j]):
+
+                    yout = pl[i][j] 
+                    yout_sub_class = pl[i+1][j]
+
+                    class_diff = np.abs(len(yout[yout == min(tree_branch[i][j][k])]) - len(yout_sub_class))
+                    for x in range(len(yout)): 
+                        if(yout[x] == min(tree_branch[i][j][k])):
+                            if(class_diff < len(yout_sub_class)):
+                                yout[x] = yout_sub_class[class_diff] 
+                                class_diff += 1
+                    pl[i][j] = yout
+
+    #Collecting the labels from the second branch layer to the first layer. ¨
+    #Cobime the two second layers to the final labeling. 
+    
+    yout_sub_1 = pl[1][0]
+    yout_sub_2 = pl[1][1]
+
+    print(classesInLabels(yout_sub_1)) 
+    print(classesInLabels(yout_sub_2))
+
+    yout = pl[0]
+
+    if(yout_sub_1 == []): 
+        class_diff = np.abs(len(yout[yout == min(tree_branch[0][1])]) - len(yout_sub_2))
+        for x in range(len(yout)): 
+            if(yout[x] in tree_branch[0][1]):
+                if(class_diff < len(yout_sub_2)):
+                    yout[x] = yout_sub_2[class_diff] 
+                    class_diff += 1
+        print(class_diff)
+
+    elif(yout_sub_2 == []): 
+        class_diff = np.abs(len(yout[yout == min(tree_branch[0][0])]) - len(yout_sub_1))
+        for x in range(len(yout)): 
+            if(yout[x] in tree_branch[0][0]):
+                if(class_diff < len(yout_sub_1)):
+                    yout[x] = yout_sub_1[class_diff] 
+                    class_diff += 1
+        print(class_diff)
+
+    else:
+        count_sub_1 = 0 
+        count_sub_2 = 0 
+        for x in range(len(yout)): 
+            if(yout[x] in tree_branch[0][0]):
+                if(count_sub_1 < len(yout_sub_1)):
+                    yout[x] = yout_sub_1[count_sub_1] 
+                    count_sub_1 += 1
+            if(yout[x] in tree_branch[0][1]):
+                if(count_sub_2 < len(yout_sub_1)): 
+                    yout[x] = yout_sub_1[count_sub_2] 
+                    count_sub_2 += 1
+
+        print(count_sub_1)
+        print(count_sub_2)
+
+    return yout
 
 def SvmDesionTree(data, labels, tree_branches, svm_branch_models = {}):
     """
@@ -216,6 +223,8 @@ def SvmDesionTree(data, labels, tree_branches, svm_branch_models = {}):
 
     #Trains a svm model for each branch from the 
     #If svm_branch_models defined, if not defined every branch have just regular SVC() 
+
+    print(data_and_labels_branches)
 
     if(len(svm_branch_models) > 0): 
         svm_branch_models = SvmBranchModelTrainDefined(data_and_labels_branches, svm_branch_models)
