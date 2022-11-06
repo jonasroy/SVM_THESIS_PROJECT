@@ -278,9 +278,12 @@ def SeperateDataLabels(data,labels, seperation):
                     classesInSeperation.append(seperation[i][j])
 
         classesInSeperation.sort()
+        classesInSeperation = np.array(classesInSeperation)
         cIL = classesInLabels(labels)
 
-        if(not(classesInSeperation == cIL)): 
+        #Checks if the seperation and the labels have same amount of classes. If not return -1 ????
+        if(not((classesInSeperation == cIL).all())): 
+
             for i in range(len(cIL)): 
                 if(not(cIL[i] in classesInSeperation)):
                     print(cIL[i])
@@ -307,14 +310,141 @@ def SvmDesionTree(data, labels, tree_branches):
     Every branch in the SVM Desion Tree is aimed to be 1v1 classification. 
     """
 
-    n_svm_models = len(tree_branches[len(tree_branches)]) + 1 #Need to find out the amount of models to be added to array 
-    svm_models = []
+    #n_svm_models = len(tree_branches[len(tree_branches)]) + 1 #Need to find out the amount of models to be added to array 
+    svm_models = {}
+    data_and_labels_branches = {}
+    
+    #Stores the different training and labeling for the different branches
+    #Every layer are stored in data_and_labels_branches dictornary and are in coresponding placement as tree_branches dictonary. 
+
+    if(len(tree_branches) > 0): 
+        for i in range(0,len(tree_branches)): 
+            data_and_labels = []
+            try: 
+                for j in range(len(tree_branches[i])): 
+                    data_and_labels.append(SeperateDataLabels(data, labels, tree_branches[i][j]))
+            except: 
+                data_and_labels = SeperateDataLabels(data, labels, tree_branches[i])
+
+            data_and_labels_branches[i] = data_and_labels
+    #Train all the SVM Models for the different tree branches from the data and labeling in data_and_labels_branches.
+    # Stores the predicted labels in the predict_labels dictonary
+
+    predicted_labels = {} 
+
+    print(data_and_labels_branches)
+
+    #for i in range(len(data_and_labels_branches)): 
+    #    for j in range(len(data_and_labels_branches[i])): 
+
+    """
+            train_data, train_labels = data_and_labels_branches[i]
+            
+            svm = SVC()
+            svm.fit(train_data, train_labels)
+            yout = svm.predict(train_data) 
+
+            svm_models[i].append(svm)  
+            predicted_labels[i].append(yout)
+    """
+    #Combine all the SVM to one labeling.
+
+   # print(predicted_labels)
+    
 
     return 0 
 
-def combineResults(): 
+def combineLabels(predicted_labels): 
     """
     Combine the result from the desion tree. Should be automated. 
     """
     
+    for i in range(len(predicted_labels), 0): 
+        for j in range(len(predicted_labels)): 
+            branch1 = []
+            branch2 = []
+
+            if(predicted_labels[i][j] == 2):  
+
+
+    
+
+
     return 0 
+
+
+
+def BranchDataLabels(data, labels, tree_branches): 
+
+    """
+    Takes in data and labes for the SVM Desion Tree. 
+    Makes the labels for every branch 1v1 classes. 
+
+    """
+
+    if(len(tree_branches) > 0): 
+        if(len(tree_branches[0]) == 2): 
+
+            #Seperating the classes on the first branch of the data and the labels.
+            data_and_labels_branches = {0 : SeperateDataLabels(data, labels, tree_branches[0])}
+            
+            for i in range(1,len(tree_branches)): 
+                data_and_labels = []
+                for j in range(len(tree_branches[i])): 
+                    if(len(tree_branches[i][j]) == 2):
+                            data_and_labels.append(SeperateDataLabels(data,labels,tree_branches[i][j]))
+                    else: 
+                        data_and_labels.append([])
+                data_and_labels_branches[i] = data_and_labels
+
+            return data_and_labels_branches
+        
+        else: 
+            return -1
+
+
+def SvmBranchModelTrain(data_and_labels_branches): 
+
+    svm_branch_models = {}
+
+    svm = SVC()
+    train_data, train_labels = data_and_labels_branches[0]
+    svm.fit(train_data, train_labels)
+    svm_branch_models[0] = svm
+
+    for i in range(1,len(data_and_labels_branches)): 
+        svm_models = []
+        for j in range(len(data_and_labels_branches[i])): 
+            if(len(data_and_labels_branches[i][j]) == 2): 
+                train_data, train_labels = data_and_labels_branches[i][j]
+                svm = SVC()
+                svm.fit(train_data, train_labels)
+                svm_models.append(svm)
+            else: 
+                svm_models.append(False)
+        svm_branch_models[i] = svm_models
+
+    return svm_branch_models
+
+
+def SvmBranchModelPredict(data_and_labels_branches, svm_branch_models): 
+    predicted_branch_labels = {}
+
+    svm = svm_branch_models[0]
+    train_data, train_labels = data_and_labels_branches[0]
+    yout = svm.predict(train_data)
+    predicted_branch_labels[0] = yout
+
+    for i in range(1,len(data_and_labels_branches)): 
+        predicted_labels = []
+        for j in range(len(data_and_labels_branches[i])): 
+            if(len(data_and_labels_branches[i][j]) == 2): 
+                train_data, train_labels = data_and_labels_branches[i][j]
+                svm = svm_branch_models[i][j]
+                yout = svm.predict(train_data)
+                predicted_labels.append(yout)
+            else: 
+                predicted_labels.append([])
+        predicted_branch_labels[i] = predicted_labels
+
+    return predicted_branch_labels
