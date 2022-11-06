@@ -1,4 +1,5 @@
 from sklearn.svm import SVC
+from HelperFunctions_ import classesInLabels
 import numpy as np
 import copy
 
@@ -43,8 +44,6 @@ def SeperateDataLabels(data,labels, seperation):
     else: 
         print("The seperation needs to be 2 in length. For 1v1 classification")
         return -1
-
-
 
 
 def combineLabels(predicted_labels, tree_branch): 
@@ -161,6 +160,28 @@ def SvmBranchModelTrain(data_and_labels_branches):
     return svm_branch_models
 
 
+def SvmBranchModelTrainDefined(data_and_labels_branches, svm_branch_models): 
+
+    svm = svm_branch_models[0]
+    train_data, train_labels = data_and_labels_branches[0]
+    svm.fit(train_data, train_labels)
+    svm_branch_models[0] = svm
+
+    for i in range(1,len(data_and_labels_branches)): 
+        svm_models = []
+        for j in range(len(data_and_labels_branches[i])): 
+            if(len(data_and_labels_branches[i][j]) == 2): 
+                train_data, train_labels = data_and_labels_branches[i][j]
+                svm = svm_branch_models[i][j]
+                svm.fit(train_data, train_labels)
+                svm_models.append(svm)
+            else: 
+                svm_models.append(False)
+        svm_branch_models[i] = svm_models
+
+    return svm_branch_models
+
+
 def SvmBranchModelPredict(data_and_labels_branches, svm_branch_models): 
     predicted_branch_labels = {}
 
@@ -185,19 +206,23 @@ def SvmBranchModelPredict(data_and_labels_branches, svm_branch_models):
 
 
 
-def SvmDesionTree(data, labels, tree_branches):
+def SvmDesionTree(data, labels, tree_branches, svm_branch_models = {}):
     """
-    Every branch in the SVM Desion Tree is aimed to be 1v1 classification. 
+    Every branch in the SVM Desion Tree is aimed to be 1v1 and 1vRest classification. 
     """
-
-
     #Seperating the data and labels to different sub classes
 
     data_and_labels_branches = BranchDataLabels(data, labels, tree_branches)
 
     #Trains a svm model for each branch from the 
-    svm_branch_models = SvmBranchModelTrain(data_and_labels_branches)
-    predicted_branch_labels = SvmBranchModelPredict(data_and_labels_branches, svm_branch_models)
-    pl = combineLabels(predicted_branch_labels, tree_branches)
+    #If svm_branch_models defined, if not defined every branch have just regular SVC() 
 
-    return pl
+    if(len(svm_branch_models) > 0): 
+        svm_branch_models = SvmBranchModelTrainDefined(data_and_labels_branches, svm_branch_models)
+    else: 
+        svm_branch_models = SvmBranchModelTrain(data_and_labels_branches)
+
+    predicted_branch_labels = SvmBranchModelPredict(data_and_labels_branches, svm_branch_models)
+    predicted_label = combineLabels(predicted_branch_labels, tree_branches)
+
+    return predicted_label
