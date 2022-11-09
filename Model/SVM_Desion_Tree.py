@@ -122,7 +122,7 @@ def SvmBranchModelTrainDefined(data_and_labels_branches, svm_branch_models):
 
     return svm_branch_models_
 
-
+"""
 def SvmBranchModelPredict(data_and_labels_branches, svm_branch_models): 
     predicted_branch_labels = {}
 
@@ -145,9 +145,9 @@ def SvmBranchModelPredict(data_and_labels_branches, svm_branch_models):
 
     return predicted_branch_labels
 
+"""
 
-
-def SvmBranchModelPredict_(data, svm_branch_models, tree_branch): 
+def SvmBranchModelPredict(data, svm_branch_models, tree_branch): 
     
     test_data = copy.deepcopy(data)
     
@@ -250,11 +250,11 @@ def combineLabels(predicted_labels, tree_branch):
     #Collecting the labels from the second branch layer to the first layer. 
     #Cobime the two second layers to the final labeling. 
 
-    if(pl[1][1] == []): 
+    if(len(pl[1][0]) and not(len(pl[1][1]))): 
         yout_sub_1 = pl[1][0]
         yout_sub_2 = []
     
-    elif(pl[1][0] == []):
+    elif(len(pl[1][1]) and not(len(pl[1][0]))):
         yout_sub_1 = []
         yout_sub_2 = pl[1][1]
 
@@ -298,29 +298,6 @@ def combineLabels(predicted_labels, tree_branch):
 
 
 def SvmDesionTree(data, labels, tree_branches, svm_branch_models = {}):
-    """
-    Every branch in the SVM Desion Tree is aimed to be 1v1 and 1vRest classification. 
-    """
-    #Seperating the data and labels to different sub classes
-
-    data_and_labels_branches = BranchDataLabels(data, labels, tree_branches)
-
-    #Trains a svm model for each branch from the 
-    #If svm_branch_models defined, if not defined every branch have just regular SVC() 
-
-    if(len(svm_branch_models) > 0): 
-        svm_branch_models = SvmBranchModelTrainDefined(data_and_labels_branches, svm_branch_models)
-    else: 
-        svm_branch_models = SvmBranchModelTrain(data_and_labels_branches)
-
-    predicted_branch_labels = SvmBranchModelPredict(data_and_labels_branches, svm_branch_models)
-
-    predicted_label = combineLabels(predicted_branch_labels, tree_branches)
-
-    return predicted_label
-
-
-def SvmDesionTree2(data, labels, tree_branches, svm_branch_models = {}):
     
 
     """
@@ -338,9 +315,7 @@ def SvmDesionTree2(data, labels, tree_branches, svm_branch_models = {}):
     else: 
         svm_branch_models = SvmBranchModelTrain(data_and_labels_branches)
 
-    predicted_branch_labels = SvmBranchModelPredict_(data, svm_branch_models, tree_branches)
-
-    print(predicted_branch_labels)
+    predicted_branch_labels = SvmBranchModelPredict(data, svm_branch_models, tree_branches)
 
     predicted_label = combineLabels(predicted_branch_labels, tree_branches)
 

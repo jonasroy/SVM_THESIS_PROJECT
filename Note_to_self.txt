@@ -11,3 +11,6 @@ Note-to-self
     - Change of the prorization of the classes. 
     - Make different models
     - Mash them together to one model or something. 
+
+5. Find out what Sklearn PCA is, use this for get the dimensonality reduction. 
+6. Show picture with labels of different classes
