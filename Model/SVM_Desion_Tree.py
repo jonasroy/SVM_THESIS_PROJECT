@@ -298,7 +298,7 @@ def combineLabels(predicted_labels, tree_branch):
 
 
 def SvmDesionTree(data, labels, tree_branches, svm_branch_models = {}):
-    
+    import time
 
     """
     Every branch in the SVM Desion Tree is aimed to be 1v1 and 1vRest classification. 
@@ -315,8 +315,16 @@ def SvmDesionTree(data, labels, tree_branches, svm_branch_models = {}):
     else: 
         svm_branch_models = SvmBranchModelTrain(data_and_labels_branches)
 
+    time_start = time.time()
+
     predicted_branch_labels = SvmBranchModelPredict(data, svm_branch_models, tree_branches)
 
     predicted_label = combineLabels(predicted_branch_labels, tree_branches)
+
+    time_stop = time.time()
+
+    prediction_time = time_stop - time_start
+
+    print("The prediction time is: " + str(round(prediction_time,3)) + str(" sec."))
 
     return predicted_label
