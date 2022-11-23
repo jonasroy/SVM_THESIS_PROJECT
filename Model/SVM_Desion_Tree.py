@@ -147,7 +147,7 @@ def SvmBranchModelPredict(data_and_labels_branches, svm_branch_models):
 
 """
 
-def SvmBranchModelPredict(data, svm_branch_models, tree_branch): 
+def SvmBranchModelPredict(data, svm_branch_models, tree_branch, sub_data = 0): 
     
     test_data = copy.deepcopy(data)
     
@@ -209,13 +209,13 @@ def SvmBranchModelPredict(data, svm_branch_models, tree_branch):
         if((i-1) <= len(svm_branch_models)): 
             sub_data_branch[i+1] = sub_data_sub_branch
 
-
-
-    return predicted_branch_labels
-
-
-
+    if(sub_data == 0): 
+        return predicted_branch_labels
     
+    if(sub_data == 1): 
+        return predicted_branch_labels, sub_data_branch
+
+
 
 def combineLabels(predicted_labels, tree_branch): 
 
@@ -328,3 +328,49 @@ def SvmDesionTree(data, labels, tree_branches, svm_branch_models = {}):
     print("The prediction time is: " + str(round(prediction_time,3)) + str(" sec."))
 
     return predicted_label
+
+
+def SvmDesionTreeTrain(train_data, train_labels, tree_branches, svm_branch_models = {}, sub_data = 0):
+    """
+    Every branch in the SVM Desion Tree is aimed to be 1v1 and 1vRest classification. 
+    """
+    #Seperating the data and labels to different sub classes
+
+    data_and_labels_branches = BranchDataLabels(train_data, train_labels, tree_branches)
+
+    #Trains a svm model for each branch from the 
+    #If svm_branch_models defined, if not defined every branch have just regular SVC() 
+
+    if(len(svm_branch_models) > 0): 
+        if(sub_data == 1): 
+            svm_branch_models, sub_data_branch = SvmBranchModelTrainDefined(data_and_labels_branches, svm_branch_models, sub_data = sub_data)
+
+        svm_branch_models = SvmBranchModelTrainDefined(data_and_labels_branches, svm_branch_models)
+    else: 
+        svm_branch_models = SvmBranchModelTrain(data_and_labels_branches) 
+
+    if(sub_data == 0):
+        return svm_branch_models
+    
+    if(sub_data == 1): 
+        return svm_branch_models, sub_data_branch
+    
+
+def SvmDesionTreePredict(test_data, svm_branch_models, tree_branches, sub_data = 0): 
+    import time
+
+    time_start = time.time()
+
+    predicted_branch_labels = SvmBranchModelPredict(test_data, svm_branch_models, tree_branches)
+
+    predicted_label = combineLabels(predicted_branch_labels, tree_branches)
+
+    time_stop = time.time()
+
+    prediction_time = time_stop - time_start
+
+    print("The prediction time is: " + str(round(prediction_time,3)) + str(" sec."))
+
+    return predicted_label
+
+
