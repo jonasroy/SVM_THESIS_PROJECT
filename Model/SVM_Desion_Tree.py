@@ -32,11 +32,11 @@ def SeperateDataLabels(data,labels, seperation):
                     train_data = train_data[train_labels != cIL[i]]
                     train_labels = train_labels[train_labels != cIL[i]]
 
-        for i in range(len(seperation)): 
-            for j in range(len(seperation[i])):
-                if(seperation[i][j] != min(seperation[i])):
-                    
-                    train_labels[train_labels == seperation[i][j]] = min(seperation[i])
+        if(len(classesInLabels(labels)) > 2):  #Remove this if not work
+            for i in range(len(seperation)): 
+                for j in range(len(seperation[i])):
+                    if(seperation[i][j] != min(seperation[i])):
+                        train_labels[train_labels == seperation[i][j]] = min(seperation[i])
         
         return train_data, train_labels
         
@@ -113,6 +113,7 @@ def SvmBranchModelTrainDefined(data_and_labels_branches, svm_branch_models):
         for j in range(len(data_and_labels_branches[i])): 
             if(len(data_and_labels_branches[i][j]) == 2): 
                 train_data, train_labels = data_and_labels_branches[i][j]
+                print(classesInLabels(train_labels))
                 svm = copy.deepcopy(svm_branch_models[i][j]) 
                 svm.fit(train_data, train_labels)
                 svm_models.append(svm)
@@ -147,7 +148,7 @@ def SvmBranchModelPredict(data_and_labels_branches, svm_branch_models):
 
 """
 
-def SvmBranchModelPredict(data, svm_branch_models, tree_branch, sub_data = 0): 
+def SvmBranchModelPredict(data, svm_branch_models, tree_branch, sub_data_return = 0): 
     
     test_data = copy.deepcopy(data)
     
@@ -209,10 +210,10 @@ def SvmBranchModelPredict(data, svm_branch_models, tree_branch, sub_data = 0):
         if((i-1) <= len(svm_branch_models)): 
             sub_data_branch[i+1] = sub_data_sub_branch
 
-    if(sub_data == 0): 
+    if(sub_data_return == 0): 
         return predicted_branch_labels
     
-    if(sub_data == 1): 
+    if(sub_data_return == 1): 
         return predicted_branch_labels, sub_data_branch
 
 
@@ -244,7 +245,7 @@ def combineLabels(predicted_labels, tree_branch):
                                     pl[i][j] = yout
                                 
                             except: 
-                                None 
+                                None
     
 
     #Collecting the labels from the second branch layer to the first layer. 
@@ -297,6 +298,30 @@ def combineLabels(predicted_labels, tree_branch):
     return yout
 
 
+
+def RetrieveSubData(data,labels, sub_tree_branch): 
+
+    train_data = copy.deepcopy(data)
+    train_labels = copy.deepcopy(labels)
+
+    seperation = np.array(sub_tree_branch[0] + sub_tree_branch[1])
+
+    classes = classesInLabels(labels)
+    remove_classes = []
+
+    for i in range(len(classesInLabels(labels))): 
+        if(not(classes[i] in seperation)): 
+            remove_classes.append(classes[i])
+            
+
+    for i in range(len(remove_classes)):
+        if(remove_classes[i] in labels):
+            train_data = train_data[train_labels != remove_classes[i]]
+            train_labels = train_labels[train_labels != remove_classes[i]]
+        
+    return train_data, train_labels
+
+
 def SvmDesionTree(data, labels, tree_branches, svm_branch_models = {}):
     import time
 
@@ -342,18 +367,15 @@ def SvmDesionTreeTrain(train_data, train_labels, tree_branches, svm_branch_model
     #If svm_branch_models defined, if not defined every branch have just regular SVC() 
 
     if(len(svm_branch_models) > 0): 
-        if(sub_data == 1): 
-            svm_branch_models, sub_data_branch = SvmBranchModelTrainDefined(data_and_labels_branches, svm_branch_models, sub_data = sub_data)
-
         svm_branch_models = SvmBranchModelTrainDefined(data_and_labels_branches, svm_branch_models)
     else: 
         svm_branch_models = SvmBranchModelTrain(data_and_labels_branches) 
 
-    if(sub_data == 0):
-        return svm_branch_models
+    if(sub_data):
+        return svm_branch_models, data_and_labels_branches
     
-    if(sub_data == 1): 
-        return svm_branch_models, sub_data_branch
+    else: 
+        return svm_branch_models
     
 
 def SvmDesionTreePredict(test_data, svm_branch_models, tree_branches, sub_data = 0): 
@@ -361,7 +383,11 @@ def SvmDesionTreePredict(test_data, svm_branch_models, tree_branches, sub_data =
 
     time_start = time.time()
 
-    predicted_branch_labels = SvmBranchModelPredict(test_data, svm_branch_models, tree_branches)
+    if(sub_data): 
+        predicted_branch_labels, sub_data_branch = SvmBranchModelPredict(test_data, svm_branch_models, tree_branches, sub_data_return=sub_data)
+    
+    else: 
+        predicted_branch_labels= SvmBranchModelPredict(test_data, svm_branch_models, tree_branches)
 
     predicted_label = combineLabels(predicted_branch_labels, tree_branches)
 
@@ -371,6 +397,9 @@ def SvmDesionTreePredict(test_data, svm_branch_models, tree_branches, sub_data =
 
     print("The prediction time is: " + str(round(prediction_time,3)) + str(" sec."))
 
-    return predicted_label
+    if(sub_data): 
+        return predicted_label, sub_data_branch
+    else: 
+        return predicted_label
 
 
