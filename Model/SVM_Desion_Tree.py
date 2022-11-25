@@ -113,7 +113,6 @@ def SvmBranchModelTrainDefined(data_and_labels_branches, svm_branch_models):
         for j in range(len(data_and_labels_branches[i])): 
             if(len(data_and_labels_branches[i][j]) == 2): 
                 train_data, train_labels = data_and_labels_branches[i][j]
-                print(classesInLabels(train_labels))
                 svm = copy.deepcopy(svm_branch_models[i][j]) 
                 svm.fit(train_data, train_labels)
                 svm_models.append(svm)
@@ -122,31 +121,7 @@ def SvmBranchModelTrainDefined(data_and_labels_branches, svm_branch_models):
         svm_branch_models_[i] = svm_models
 
     return svm_branch_models_
-
-"""
-def SvmBranchModelPredict(data_and_labels_branches, svm_branch_models): 
-    predicted_branch_labels = {}
-
-    svm = svm_branch_models[0]
-    train_data, train_labels = data_and_labels_branches[0]
-    yout = svm.predict(train_data)
-    predicted_branch_labels[0] = yout
-
-    for i in range(1,len(data_and_labels_branches)): 
-        predicted_labels = []
-        for j in range(len(data_and_labels_branches[i])): 
-            if(len(data_and_labels_branches[i][j]) == 2): 
-                train_data, train_labels = data_and_labels_branches[i][j]
-                svm = svm_branch_models[i][j]
-                yout = svm.predict(train_data)
-                predicted_labels.append(yout)
-            else: 
-                predicted_labels.append([])
-        predicted_branch_labels[i] = predicted_labels
-
-    return predicted_branch_labels
-
-"""
+    
 
 def SvmBranchModelPredict(data, svm_branch_models, tree_branch, sub_data_return = 0): 
     
@@ -176,7 +151,6 @@ def SvmBranchModelPredict(data, svm_branch_models, tree_branch, sub_data_return 
         sub_data_sub_branch.append(sub_data_2)
 
     sub_data_branch[1] = sub_data_sub_branch
-
 
     for i in range(1,len(svm_branch_models)):
         predicted_labels = []
@@ -272,7 +246,7 @@ def combineLabels(predicted_labels, tree_branch):
                 if(class_diff < len(yout_sub_2)):
                     yout[x] = yout_sub_2[class_diff] 
                     class_diff += 1
-        print(class_diff)
+        #print(class_diff)
 
     elif(yout_sub_2 == []): 
         class_diff = np.abs(len(yout[yout == min(tree_branch[0][0])]) - len(yout_sub_1))
@@ -281,7 +255,7 @@ def combineLabels(predicted_labels, tree_branch):
                 if(class_diff < len(yout_sub_1)):
                     yout[x] = yout_sub_1[class_diff] 
                     class_diff += 1
-        print(class_diff)
+        #print(class_diff)
 
     else:
         count_sub_1 = 0 
@@ -321,6 +295,83 @@ def RetrieveSubData(data,labels, sub_tree_branch):
         
     return train_data, train_labels
 
+def classesSvmBranches(svm_tree_branch):
+    cSB = [svm_tree_branch[0].classes_]
+    for i in range(1,len(svm_tree_branch)): 
+        branch = []
+        for j in range(len(svm_tree_branch[i])): 
+            if(not(svm_tree_branch[i][j] == False)): 
+                branch.append(svm_tree_branch[i][j].classes_)
+        cSB.append(branch)
+    
+    return cSB
+
+def SupportVectorsSvmBranches(svm_tree_branch):
+    cSB = []
+    cSB.append(svm_tree_branch[0].n_support_)
+    for i in range(1,len(svm_tree_branch)): 
+        branch = []
+        for j in range(len(svm_tree_branch[i])): 
+            if(not(svm_tree_branch[i][j] == False)): 
+                branch.append(svm_tree_branch[i][j].n_support_)
+        cSB.append(branch)
+    
+    return cSB
+
+def TotalAndMeanSupportVectors(support_vectors_array): 
+
+    all_support_vectors = []
+    for i in range(len(support_vectors_array)): 
+        for j in range(len(support_vectors_array[i])):
+                try:
+                    all_support_vectors.append(support_vectors_array[i][j][0])
+                    all_support_vectors.append(support_vectors_array[i][j][1])
+                except: 
+                    all_support_vectors.append(support_vectors_array[i][j])
+
+    total_support_vector = np.sum(all_support_vectors)
+    mean_support_vector = np.mean(all_support_vectors)     
+
+    return total_support_vector, mean_support_vector
+
+def MeanAccuracy(data_and_labels_branch, sub_predicted_labels):
+        mean_accuracy = []
+
+        accuracy = sum(data_and_labels_branch[0][1] == sub_predicted_labels[0])/len(data_and_labels_branch[0][1])
+
+        mean_accuracy.append(accuracy)
+
+        for i in range(1,len(data_and_labels_branch)-1):  
+            for j in range(len(data_and_labels_branch[i])): 
+                if(len(data_and_labels_branch[i][j][1]) < len(sub_predicted_labels[i][j])): 
+                    buffer_data = data_and_labels_branch[i][j][1][:len(sub_predicted_labels[i][j])]
+                    accuracy = sum(buffer_data == sub_predicted_labels[i][j])/len(buffer_data)
+                    mean_accuracy.append(accuracy)
+                
+                elif(len(data_and_labels_branch[i][j][1]) > len(sub_predicted_labels[i][j])): 
+                    buffer_data = sub_predicted_labels[i][j][1][:len(data_and_labels_branch[i][j][1])]
+                    accuracy = sum(buffer_data == data_and_labels_branch[i][j][1])/len(buffer_data)
+                    mean_accuracy.append(accuracy)
+
+                else: 
+                    accuracy = sum(sub_predicted_labels[i][j] == data_and_labels_branch[i][i][j])/len(sub_predicted_labels[i][j])
+                    mean_accuracy.append(accuracy)
+
+        return np.mean(mean_accuracy)
+
+def combineMultiBranch(sub_branch_label,sub_branch, branch_label): 
+    combined_sub_label = combineLabels(sub_branch_label, sub_branch)
+
+    combined_label = copy.deepcopy(branch_label)
+    count = 0
+
+    for i in range(len(combined_label)): 
+        if(count <= len(combined_sub_label)): 
+            if(min(combined_sub_label) == combined_label[i]): 
+                combined_label[i] = combined_sub_label[count]
+                count = count + 1
+
+    return combined_label
 
 def SvmDesionTree(data, labels, tree_branches, svm_branch_models = {}):
     import time
@@ -398,8 +449,6 @@ def SvmDesionTreePredict(test_data, svm_branch_models, tree_branches, sub_data =
     print("The prediction time is: " + str(round(prediction_time,3)) + str(" sec."))
 
     if(sub_data): 
-        return predicted_label, sub_data_branch
+        return predicted_label, sub_data_branch, predicted_branch_labels   
     else: 
         return predicted_label
-
-

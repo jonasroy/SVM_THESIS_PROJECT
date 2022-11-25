@@ -259,5 +259,26 @@ def reshape_sj(data):
 
     return np.array(reshaped_data)
 
+def classesSvmBranches(svm_tree_branch):
+    cSB = [svm_tree_branch[0].classes_]
+    for i in range(1,len(svm_tree_branch)): 
+        branch = []
+        for j in range(len(svm_tree_branch[i])): 
+            if(not(svm_tree_branch[i][j] == False)): 
+                branch.append(svm_tree_branch[i][j].classes_)
+        cSB.append(branch)
+    
+    return cSB
+
+def SupportVectorsSvmBranches(svm_tree_branch):
+    cSB = [svm_tree_branch[0].n_support_]
+    for i in range(1,len(svm_tree_branch)): 
+        branch = []
+        for j in range(len(svm_tree_branch[i])): 
+            if(not(svm_tree_branch[i][j] == False)): 
+                branch.append(svm_tree_branch[i][j].n_support_)
+        cSB.append(branch)
+    
+    return cSB
 
 
