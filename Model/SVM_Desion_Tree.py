@@ -2,6 +2,7 @@ from sklearn.svm import SVC
 from HelperFunctions_ import classesInLabels
 import numpy as np
 import copy
+import time
 
 def SeperateDataLabels(data,labels, seperation): 
 
@@ -124,15 +125,19 @@ def SvmBranchModelTrainDefined(data_and_labels_branches, svm_branch_models):
     
 
 def SvmBranchModelPredict(data, svm_branch_models, tree_branch, sub_data_return = 0): 
-    
+
     test_data = copy.deepcopy(data)
-    
+
     predicted_branch_labels = {}
     sub_data_branch = {}
     sub_data_sub_branch = []
 
     svm = svm_branch_models[0]
+    start_time = time.time()
     yout = svm.predict(test_data)
+    stop_time = time.time()
+
+    print("The first branch: " + str(round(stop_time - start_time,3)))
 
     predicted_branch_labels[0] = yout
     sub_data_branch[0] = test_data
@@ -140,49 +145,66 @@ def SvmBranchModelPredict(data, svm_branch_models, tree_branch, sub_data_return 
     sub_data_1 = test_data[yout == min(svm.classes_)]
     sub_data_2 = test_data[yout == max(svm.classes_)]
 
-    if(min(svm.classes_) in tree_branch[0][0]): 
-        sub_data_sub_branch.append(sub_data_1)
-    else: 
-        sub_data_sub_branch.append(sub_data_2)
+    branch_classes_1 = [-1] 
+    branch_classes_2 = [-1] 
 
-    if(min(svm.classes_) in tree_branch[0][1]): 
-        sub_data_sub_branch.append(sub_data_1)
-    else: 
-        sub_data_sub_branch.append(sub_data_2)
+    sub_data_sub_branch = [[],[]]
+
+    if((len(tree_branch[1][0]) > 0)): 
+        branch_classes_1 = tree_branch[1][0][0] + tree_branch[1][0][1]
+    
+    if((len(tree_branch[1][1]) > 0)): 
+        branch_classes_2 = tree_branch[1][1][0] + tree_branch[1][1][1]
+
+    if(min(yout) in branch_classes_1): 
+        sub_data_sub_branch[0] = sub_data_1
+    
+    if(max(yout) in branch_classes_1): 
+        sub_data_sub_branch[0] = sub_data_2
+
+    if(min(yout) in branch_classes_2): 
+        sub_data_sub_branch[1] = sub_data_1
+    
+    if(max(yout) in branch_classes_2): 
+        sub_data_sub_branch[1] = sub_data_2
 
     sub_data_branch[1] = sub_data_sub_branch
 
     for i in range(1,len(svm_branch_models)):
-        predicted_labels = []
-        sub_data_sub_branch = []
+        predicted_labels = [[],[]]
+        sub_data_sub_branch = [[],[]]
         for j in range(len(svm_branch_models[i])): 
-            if(svm_branch_models[i][j] != False):
+            if(not(svm_branch_models[i][j] == False)):           
                 sub_data = sub_data_branch[i][j]
                 svm = svm_branch_models[i][j]
+                
+                start_time = time.time()
                 yout = svm.predict(sub_data)
+                stop_time = time.time()
 
-                predicted_labels.append(yout)
+                predicted_labels[j] = yout 
 
-                if(i <= len(svm_branch_models)):     
-                    sub_data_1 = sub_data[yout == min(svm.classes_)]
-                    sub_data_2 = sub_data[yout == max(svm.classes_)]
+                if(i < len(svm_branch_models)-1): 
+                    branch_classes_1 = [-1]
+                    #branch_classes_2 = [-1]
 
-                    if(min(svm.classes_) in tree_branch[i][j][0]):
-                        sub_data_sub_branch.append(sub_data_1)
-                    else: 
-                        sub_data_sub_branch.append(sub_data_2)
-                     
-                    if(min(svm.classes_) in tree_branch[i][j][1]):
-                            sub_data_sub_branch.append(sub_data_1)
-                    else: 
-                        sub_data_sub_branch.append(sub_data_2)
-            else: 
-                predicted_labels.append([])
+                    sub_data_1 = sub_data[yout == min(yout)]
+                    sub_data_2 = sub_data[yout == max(yout)]
+
+                    if((len(tree_branch[i+1][j]) > 0)): 
+                        branch_classes_1 = tree_branch[i+1][j][0] + tree_branch[i+1][j][1]
+    
+                    if(min(yout) in branch_classes_1): 
+                        sub_data_sub_branch[j] = sub_data_1
+    
+                    if(max(yout) in branch_classes_1): 
+                        sub_data_sub_branch[j] = sub_data_2
+                    
+                    sub_data_branch[i+1] = sub_data_sub_branch
+
 
         predicted_branch_labels[i] = predicted_labels
-        
-        if((i-1) <= len(svm_branch_models)): 
-            sub_data_branch[i+1] = sub_data_sub_branch
+
 
     if(sub_data_return == 0): 
         return predicted_branch_labels
@@ -192,84 +214,84 @@ def SvmBranchModelPredict(data, svm_branch_models, tree_branch, sub_data_return 
 
 
 
-def combineLabels(predicted_labels, tree_branch): 
+def combineLabels(predicted_branch_labels, tree_branch): 
 
-    pl = copy.deepcopy(predicted_labels)
-    """
-    Combine the result from the desion tree. Should be automated. 
-    """
-    #if(len(pl) == len(tree_branch)): 
-    for i in range(len(pl)-2,0,-1): 
-        for j in range(len(pl[i])): 
-            for k in range(len(tree_branch[i][j])):
-                for l in range(len(tree_branch[i][j][k])): 
-                    if(tree_branch[i+1][j]):
-                        if(tree_branch[i][j][k]):
-                            try: 
-                                if(min(tree_branch[i][j][k]) in tree_branch[i+1][j][l]):
-                                    yout = pl[i][j] 
-                                    yout_sub_class = pl[i+1][j]
+    pl = copy.deepcopy(predicted_branch_labels)
 
-                                    class_diff = np.abs(len(yout[yout == min(tree_branch[i][j][k])]) - len(yout_sub_class))
-                                    for x in range(len(yout)): 
-                                        if(yout[x] == min(tree_branch[i][j][k])):
-                                            if(class_diff < len(yout_sub_class)):
-                                                yout[x] = yout_sub_class[class_diff] 
-                                                class_diff += 1
-                                    pl[i][j] = yout
-                                
-                            except: 
-                                None
+    for i in range(len(pl)-1,1,-1):
+        for j in range(len(pl[i])):
+            if(len(pl[i-1][j]) > 0): 
+                if(len(pl[i][j]) > 0): 
+                    if(min(pl[i][j]) in pl[i-1][j]): 
+                        yout_branch = pl[i-1][j]
+                        yout_sub_branch = pl[i][j]
+                        class_lenght_diff = int(np.abs(len(yout_branch[yout_branch == min(yout_sub_branch)]) - len(yout_sub_branch)))
+
+                        #print("class length diff: " + str(class_lenght_diff))
+                        
+                        min_sub_value = min(yout_sub_branch)
+
+                        for x in range(len(yout_branch)): 
+                            if(class_lenght_diff < len(yout_branch)):
+                                if(class_lenght_diff < len(yout_sub_branch)):  
+                                    if(yout_branch[x] == min_sub_value): 
+                                        yout_branch[x] = yout_sub_branch[class_lenght_diff]
+                                        class_lenght_diff += 1
+                        pl[i][j] = yout_branch
+    #"""
     
-
     #Collecting the labels from the second branch layer to the first layer. 
     #Cobime the two second layers to the final labeling. 
 
-    if(len(pl[1][0]) and not(len(pl[1][1]))): 
-        yout_sub_1 = pl[1][0]
-        yout_sub_2 = []
-    
-    elif(len(pl[1][1]) and not(len(pl[1][0]))):
-        yout_sub_1 = []
-        yout_sub_2 = pl[1][1]
+    if(len(pl) > 1): 
+        if(len(pl[1][0]) and not(len(pl[1][1]))): 
+            yout_sub_1 = pl[1][0]
+            yout_sub_2 = []
+        
+        elif(len(pl[1][1]) and not(len(pl[1][0]))):
+            yout_sub_1 = []
+            yout_sub_2 = pl[1][1]
+
+        else: 
+            yout_sub_1 = pl[1][0]
+            yout_sub_2 = pl[1][1]
+
+        yout = pl[0]
+
+        if(yout_sub_1 == []): 
+            class_diff = np.abs(len(yout[yout == min(tree_branch[0][1])]) - len(yout_sub_2))
+            for x in range(len(yout)): 
+                if(yout[x] in tree_branch[0][1]):
+                    if(class_diff < len(yout_sub_2)):
+                        yout[x] = yout_sub_2[class_diff] 
+                        class_diff += 1
+            #print(class_diff)
+
+        elif(yout_sub_2 == []): 
+            class_diff = np.abs(len(yout[yout == min(tree_branch[0][0])]) - len(yout_sub_1))
+            for x in range(len(yout)): 
+                if(yout[x] in tree_branch[0][0]):
+                    if(class_diff < len(yout_sub_1)):
+                        yout[x] = yout_sub_1[class_diff] 
+                        class_diff += 1
+            #print(class_diff)
+
+        else:
+            count_sub_1 = 0 
+            count_sub_2 = 0 
+            for x in range(len(yout)): 
+                if(yout[x] in tree_branch[0][0]):
+                    if(count_sub_1 < len(yout_sub_1)):
+                        yout[x] = yout_sub_1[count_sub_1] 
+                        count_sub_1 += 1
+                if(yout[x] in tree_branch[0][1]):
+                    if(count_sub_2 < len(yout_sub_2)): 
+                        yout[x] = yout_sub_2[count_sub_2] 
+                        count_sub_2 += 1
+        return yout
 
     else: 
-        yout_sub_1 = pl[1][0]
-        yout_sub_2 = pl[1][1]
-
-    yout = pl[0]
-
-    if(yout_sub_1 == []): 
-        class_diff = np.abs(len(yout[yout == min(tree_branch[0][1])]) - len(yout_sub_2))
-        for x in range(len(yout)): 
-            if(yout[x] in tree_branch[0][1]):
-                if(class_diff < len(yout_sub_2)):
-                    yout[x] = yout_sub_2[class_diff] 
-                    class_diff += 1
-        #print(class_diff)
-
-    elif(yout_sub_2 == []): 
-        class_diff = np.abs(len(yout[yout == min(tree_branch[0][0])]) - len(yout_sub_1))
-        for x in range(len(yout)): 
-            if(yout[x] in tree_branch[0][0]):
-                if(class_diff < len(yout_sub_1)):
-                    yout[x] = yout_sub_1[class_diff] 
-                    class_diff += 1
-        #print(class_diff)
-
-    else:
-        count_sub_1 = 0 
-        count_sub_2 = 0 
-        for x in range(len(yout)): 
-            if(yout[x] in tree_branch[0][0]):
-                if(count_sub_1 < len(yout_sub_1)):
-                    yout[x] = yout_sub_1[count_sub_1] 
-                    count_sub_1 += 1
-            if(yout[x] in tree_branch[0][1]):
-                if(count_sub_2 < len(yout_sub_2)): 
-                    yout[x] = yout_sub_2[count_sub_2] 
-                    count_sub_2 += 1
-    return yout
+        return pl[0]
 
 
 
@@ -412,6 +434,10 @@ def SvmDesionTreeTrain(train_data, train_labels, tree_branches, svm_branch_model
     """
     #Seperating the data and labels to different sub classes
 
+    import time
+
+    time_start = time.time()
+
     data_and_labels_branches = BranchDataLabels(train_data, train_labels, tree_branches)
 
     #Trains a svm model for each branch from the 
@@ -421,6 +447,13 @@ def SvmDesionTreeTrain(train_data, train_labels, tree_branches, svm_branch_model
         svm_branch_models = SvmBranchModelTrainDefined(data_and_labels_branches, svm_branch_models)
     else: 
         svm_branch_models = SvmBranchModelTrain(data_and_labels_branches) 
+
+
+    time_stop = time.time()
+
+    training_time = time_stop - time_start
+
+    print("The training time is: " + str(round(training_time,3)) + str(" sec."))
 
     if(sub_data):
         return svm_branch_models, data_and_labels_branches

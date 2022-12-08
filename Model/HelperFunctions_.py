@@ -4,10 +4,11 @@ import numpy as np
 import os 
 import copy
 from sklearn import preprocessing
+import time
+from sklearn.svm import SVC
+from sklearn.cluster import KMeans
+from sklearn.neighbors import KNeighborsClassifier
 
-def create_hyper_image(dataset): 
-    #Insperation from: https://www.youtube.com/watch?v=Yu6NrxiV91Y
-    img = open_image(dataset)
 
 def write_dataset_to_file(dataset, filename):
     f = open(filename)
@@ -79,9 +80,9 @@ def subFrame(data, labels, x1, x2, y1, y2):
     
 
 
-def preprocesing_data(data,labels): 
+def preprocesing_data(data,labels, shape): 
     # prepare data
-    X = data.transpose(0,2,1).reshape((-1,61))
+    X = data.transpose(0,2,1).reshape((-1,shape))
     y = labels.flatten()
 
     X = preprocessing.scale(X, axis=0)                    # Normalization
@@ -282,3 +283,136 @@ def SupportVectorsSvmBranches(svm_tree_branch):
     return cSB
 
 
+
+def SingleMachineLearningTest(data, label, train_data, train_label, iter): 
+
+
+    """
+    Test these different machine learning algorithms: 
+        - SVM Linear 1-vs-1 
+        - SVM Linear 1-vs-Rest
+        - SVM RBF(Radial Basis Function)
+        - KMeans
+        - KNearestNeighbor 
+    """
+    
+    #Define different machine learning algoritms
+
+    svm_linear_ovo = SVC(kernel="linear",class_weight= "balanced", max_iter=iter, decision_function_shape="ovo")
+    svm_linear_ovr = SVC(kernel="linear",class_weight= "balanced", max_iter=iter, decision_function_shape="ovr")
+    svm_rbf = SVC(kernel="rbf",class_weight= "balanced", max_iter=iter, decision_function_shape="ovr")
+    k_means = KMeans()
+    k_nearest_neighbor = KNeighborsClassifier()
+
+    #Train the different models with printing of training time. 
+
+    start_time = time.time()
+
+    svm_linear_ovo.fit(train_data, train_label)
+
+    stop_time = time.time() 
+
+    print("Linear 1-vs-1 Training Time: " + str(round(stop_time - start_time, 3)) + "sec.")
+
+
+    start_time = time.time()
+
+    svm_linear_ovr.fit(train_data, train_label)
+
+    stop_time = time.time() 
+
+    print("Linear 1-vs-Rest Training Time: " + str(round(stop_time - start_time, 3)) + "sec.")
+
+
+    start_time = time.time()
+
+    svm_rbf.fit(train_data, train_label)
+
+    stop_time = time.time() 
+
+    print("RBF Training Time: " + str(round(stop_time - start_time, 3)) + "sec.")
+
+
+    start_time = time.time()
+
+    k_means.fit(train_data, train_label)
+
+    stop_time = time.time() 
+
+    print("Kmeans Training Time: " + str(round(stop_time - start_time, 3)) + "sec.")
+
+    
+    start_time = time.time()
+
+    k_nearest_neighbor.fit(train_data, train_label)
+
+    stop_time = time.time() 
+
+    print("KNearestNeighbor Training Time: " + str(round(stop_time - start_time, 3)) + "sec.")
+
+    
+    #Predict the different models with time. 
+
+    start_time = time.time()
+
+    linear_ovo_yout = svm_linear_ovo.predict(data)
+
+    stop_time = time.time()
+
+    print("Linear 1-vs-1 Predict Time: " + str(round(stop_time - start_time, 3)) + "sec.")
+
+
+    start_time = time.time()
+
+    linear_ovr_yout = svm_linear_ovr.predict(data)
+
+    stop_time = time.time()
+
+    print("Linear 1-vs-Rest Predict Time: " + str(round(stop_time - start_time, 3)) + "sec.")
+
+
+    start_time = time.time()
+
+    rbf_yout = svm_rbf.predict(data)
+
+    stop_time = time.time()
+
+    print("RBF Predict Time: " + str(round(stop_time - start_time, 3)) + "sec.")
+
+    
+    start_time = time.time()
+
+    kmeans_yout = k_means.predict(data)
+
+    stop_time = time.time()
+
+    print("KMeans Predict Time: " + str(round(stop_time - start_time, 3)) + "sec.")
+
+
+    start_time = time.time()
+
+    knearest_yout = k_nearest_neighbor.predict(data)
+
+    stop_time = time.time()
+
+    print("KNearestNeighbor Predict Time: " + str(round(stop_time - start_time, 3)) + "sec.")
+
+
+    #The overall accuracy and support vectors
+
+    print("Linear 1-vs-1 Accuracy: " + str(100*round(sum(linear_ovo_yout == label)/len(label),4)) + "%")
+    print("Linear 1-vs-Rest Accuracy: " + str(100*round(sum(linear_ovr_yout == label)/len(label),4)) + "%")
+    print("RBF Accuracy: " + str(100*round(sum(rbf_yout == label)/len(label),4)) + "%" )
+    print("KMeans Accuracy: " + str(100*round(sum(kmeans_yout == label)/len(label),4)) + "%")
+    print("KNearestNeighbour Accuracy: " + str(100*round(sum(knearest_yout == label)/len(label),4)) + "%")
+
+    print("Linear 1-vs-1 Total SVM Support_Vectors : " + str(sum(svm_linear_ovo.n_support_)))
+    print("Linear 1-vs-Rest Total SVM Support_Vectors : " + str(sum(svm_linear_ovr.n_support_)))
+    print("RBF Total SVM Support_Vectors : " + str(sum(svm_rbf.n_support_)))
+
+    print("Linear 1-vs-1 Average SVM Support_Vectors : " + str(round(np.mean(svm_linear_ovo.n_support_),3)))
+    print("Linear 1-vs-Rest Average SVM Support_Vectors : " + str(round(np.mean(svm_linear_ovr.n_support_),3)))
+    print("RBF Average SVM Support_Vectors : " + str(round(np.mean(svm_rbf.n_support_),3)))
+    
+
+    return linear_ovo_yout, linear_ovr_yout, rbf_yout, kmeans_yout, knearest_yout
