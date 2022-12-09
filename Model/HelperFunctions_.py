@@ -77,7 +77,6 @@ def subFrame(data, labels, x1, x2, y1, y2):
         sub_data.append(x_row)
 
     return np.array(sub_data), np.array(sub_label)
-    
 
 
 def preprocesing_data(data,labels, shape): 
@@ -85,7 +84,7 @@ def preprocesing_data(data,labels, shape):
     X = data.transpose(0,2,1).reshape((-1,shape))
     y = labels.flatten()
 
-    X = preprocessing.scale(X, axis=0)                    # Normalization
+    X = preprocessing.scale(X, axis=0)                
     #X = preprocessing.normalize(X, axis=0) 
     return X,y 
 
@@ -295,14 +294,26 @@ def SingleMachineLearningTest(data, label, train_data, train_label, iter):
         - KMeans
         - KNearestNeighbor 
     """
-    
-    #Define different machine learning algoritms
+
+
+
+def SingleMachineLearningTest(data, label, train_data, train_label, iter): 
+
+    """
+    Test these different machine learning algorithms: 
+        - SVM Linear 1-vs-1 
+        - SVM Linear 1-vs-Rest
+        - SVM RBF(Radial Basis Function)
+        - KMeans
+        - KNearestNeighbor 
+    """
 
     svm_linear_ovo = SVC(kernel="linear",class_weight= "balanced", max_iter=iter, decision_function_shape="ovo")
-    svm_linear_ovr = SVC(kernel="linear",class_weight= "balanced", max_iter=iter, decision_function_shape="ovr")
+    svm_linear_ovr = LinearSVC(class_weight= "balanced", max_iter=iter)
     svm_rbf = SVC(kernel="rbf",class_weight= "balanced", max_iter=iter, decision_function_shape="ovr")
-    k_means = KMeans()
-    k_nearest_neighbor = KNeighborsClassifier()
+    k_means = KMeans(n_clusters=len(classesInLabels(label)))
+    k_nearest_neighbor = KNeighborsClassifier(n_neighbors=len(classesInLabels(label)-2))
+    random_forest = RandomForestClassifier()
 
     #Train the different models with printing of training time. 
 
@@ -330,7 +341,7 @@ def SingleMachineLearningTest(data, label, train_data, train_label, iter):
 
     stop_time = time.time() 
 
-    print("RBF Training Time: " + str(round(stop_time - start_time, 3)) + "sec.")
+    print("RBF Training Time: " + str(round(stop_time - start_time, 6)) + "sec.")
 
 
     start_time = time.time()
@@ -345,6 +356,15 @@ def SingleMachineLearningTest(data, label, train_data, train_label, iter):
     start_time = time.time()
 
     k_nearest_neighbor.fit(train_data, train_label)
+
+    stop_time = time.time() 
+
+    print("KNearestNeighbor Training Time: " + str(round(stop_time - start_time, 3)) + "sec.")
+
+
+    start_time = time.time()
+
+    random_forest.fit(train_data, train_label)
 
     stop_time = time.time() 
 
@@ -398,21 +418,43 @@ def SingleMachineLearningTest(data, label, train_data, train_label, iter):
     print("KNearestNeighbor Predict Time: " + str(round(stop_time - start_time, 3)) + "sec.")
 
 
+    start_time = time.time()
+
+    random_forest_yout = random_forest.predict(data)
+
+    stop_time = time.time()
+
+    print("Random Forest Predict Time: " + str(round(stop_time - start_time, 3)) + "sec.")
+
+
     #The overall accuracy and support vectors
 
     print("Linear 1-vs-1 Accuracy: " + str(100*round(sum(linear_ovo_yout == label)/len(label),4)) + "%")
     print("Linear 1-vs-Rest Accuracy: " + str(100*round(sum(linear_ovr_yout == label)/len(label),4)) + "%")
     print("RBF Accuracy: " + str(100*round(sum(rbf_yout == label)/len(label),4)) + "%" )
     print("KMeans Accuracy: " + str(100*round(sum(kmeans_yout == label)/len(label),4)) + "%")
-    print("KNearestNeighbour Accuracy: " + str(100*round(sum(knearest_yout == label)/len(label),4)) + "%")
+    print("KNearestNeighbour Accuracy: " + str(100*round(sum(knearest_yout == label)/len(label),3)) + "%")
+    print("Random Forest Accuracy: " + str(100*round(sum(random_forest_yout == label)/len(label),3)) + "%")
 
     print("Linear 1-vs-1 Total SVM Support_Vectors : " + str(sum(svm_linear_ovo.n_support_)))
-    print("Linear 1-vs-Rest Total SVM Support_Vectors : " + str(sum(svm_linear_ovr.n_support_)))
     print("RBF Total SVM Support_Vectors : " + str(sum(svm_rbf.n_support_)))
 
     print("Linear 1-vs-1 Average SVM Support_Vectors : " + str(round(np.mean(svm_linear_ovo.n_support_),3)))
-    print("Linear 1-vs-Rest Average SVM Support_Vectors : " + str(round(np.mean(svm_linear_ovr.n_support_),3)))
     print("RBF Average SVM Support_Vectors : " + str(round(np.mean(svm_rbf.n_support_),3)))
     
 
-    return linear_ovo_yout, linear_ovr_yout, rbf_yout, kmeans_yout, knearest_yout
+    return linear_ovo_yout, linear_ovr_yout, rbf_yout, kmeans_yout, knearest_yout, random_forest_yout
+
+
+def newColorLabels(labels, dim, color_label): 
+    new_label = copy.deepcopy(labels)
+    new_label = new_label.reshape(dim, dim)
+    new_new_label = []
+
+    for i in range(len(new_label)): 
+        x_array = []
+        for j in range(len(new_label[0])): 
+            x_array.append(color_label[new_label[i][j]])
+        new_new_label.append(x_array)
+    
+    return np.array(new_new_label)
