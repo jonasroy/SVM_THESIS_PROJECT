@@ -1,4 +1,17 @@
-from sklearn.svm import SVC
+"""
+SVMBDT.py: 
+
+This program contains the the functions used to compute Support Vector Machine
+with Binary Desion Tree (SVMBDT). The main functions are SvmDesionTreeTrain() and
+SvmDesionTreePredict() that are designed to train and predict from data of 
+hyperspectral images. 
+
+"""
+__author__ = "Jonas Gjendem Røysland"
+__email__ = "jonasroy@stud.ntnu.no"
+__date__ = "2022/12/18"
+__version__ = "1.0.0"
+
 from HelperFunctions_ import classesInLabels
 import numpy as np
 import copy
@@ -305,6 +318,14 @@ def CombineLabels(predicted_branch_labels, tree_branch):
 
 def RetrieveSubData(data,labels, sub_tree_branch): 
 
+    """
+    Gets the classes that are label in a training data. 
+    Collects the corresponding pixels in the data. 
+    Return train_data, train_labels that are sub-data for a sub-tree. 
+    
+    """
+
+
     train_data = copy.deepcopy(data)
     train_labels = copy.deepcopy(labels)
 
@@ -326,6 +347,12 @@ def RetrieveSubData(data,labels, sub_tree_branch):
     return train_data, train_labels
 
 def classesSvmBranches(svm_tree_branch):
+
+    """
+    Collects the classes every svm model is trained in a SVMBDT. 
+    Returns the layers of branches. 
+    """
+
     cSB = [svm_tree_branch[0].classes_]
     for i in range(1,len(svm_tree_branch)): 
         branch = []
@@ -337,6 +364,12 @@ def classesSvmBranches(svm_tree_branch):
     return cSB
 
 def SupportVectorsSvmBranches(svm_tree_branch):
+
+    """
+    Collects the amount of Support Vectors in each SVM in a SVMBDT. 
+    Return an array the amount for each branch. 
+    """
+
     cSB = []
     cSB.append(svm_tree_branch[0].n_support_)
     for i in range(1,len(svm_tree_branch)): 
@@ -349,6 +382,10 @@ def SupportVectorsSvmBranches(svm_tree_branch):
     return cSB
 
 def TotalAndMeanSupportVectors(support_vectors_array): 
+
+    """
+    Returns a the total and mean support vectors for one SVMBDT design. 
+    """
 
     all_support_vectors = []
     for i in range(len(support_vectors_array)): 
@@ -365,6 +402,14 @@ def TotalAndMeanSupportVectors(support_vectors_array):
     return total_support_vector, mean_support_vector
 
 def MeanAccuracy(data_and_labels_branch, sub_predicted_labels):
+
+
+        """
+        Calculates the mean accuracy with the accuracy for every class. 
+        Return the mean_accuracy. 
+        
+        """
+
         mean_accuracy = []
 
         accuracy = sum(data_and_labels_branch[0][1] == sub_predicted_labels[0])/len(data_and_labels_branch[0][1])
@@ -389,17 +434,21 @@ def MeanAccuracy(data_and_labels_branch, sub_predicted_labels):
 
         return np.mean(mean_accuracy)
 
-def combineMultiBranch(sub_branch_label,sub_branch, branch_label): 
-    combined_sub_label = CombineLabels(sub_branch_label, sub_branch)
+def CombineMultiBranch(sub_branch_label,sub_tree_branch, branch_label): 
 
+    """
+    Combines a sub-tree to a branch in a SVMBDT. 
+    The minimum class in the branch are replaced with the new label from the sub-tree. 
+    Return the combine_labels that must be placed in the tree branch.
+    
+    """
+    
+    combined_sub_label = copy.deepcopy(sub_branch_label)
     combined_label = copy.deepcopy(branch_label)
-    count = 0
+    
+    classes = sub_tree_branch[0][0] + sub_tree_branch[0][1]
 
-    for i in range(len(combined_label)): 
-        if(count <= len(combined_sub_label)): 
-            if(min(combined_sub_label) == combined_label[i]): 
-                combined_label[i] = combined_sub_label[count]
-                count = count + 1
+    combined_label[combined_label == min(classes)] = combined_sub_label
 
     return combined_label
 
@@ -449,12 +498,15 @@ def SvmDesionTreeTrain(train_data, train_labels, tree_branches, svm_branch_model
 def SvmDesionTreePredict(test_data, svm_branch_models, tree_branches, sub_data = 0): 
 
     """
-    Takes in test_data, svm_branch_models and tree_branches. 
+    Takes in test_data, svm_branch_models and tree_branches. The svm_branch_models contains of
+    SVM Models that are trained form the SvmDesiionTreeTrain() functions. The format of 
+    svm_branch_models and tree_branches can be found in the SvmDFesionTreeTrain().
+    The prediction time is printed to console.  
     - Returns the predicted labels.
+        - If sub_data_return = 1; return predicted_label, sub_data_branch and predicted_branch_labels. 
     
     """
-
-
+    
     time_start = time.time()
 
     if(sub_data): 

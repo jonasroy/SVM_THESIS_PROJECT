@@ -1,5 +1,16 @@
-from sklearn import svm 
-import scipy.io
+"""
+HelperFunctions_.py: 
+
+Helper functions used for the SVMBDT project.
+They are used for preproccesing, gather infromation from the SVMBDT and test different ML Functions. 
+
+"""
+
+__author__ = "Jonas Gjendem Røysland"
+__email__ = "jonasroy@stud.ntnu.no"
+__date__ = "2022/12/18"
+__version__ = "1.0.0"
+
 import numpy as np
 import os 
 import copy
@@ -8,15 +19,17 @@ import time
 from sklearn.svm import SVC
 from sklearn.cluster import KMeans
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import LinearSVC
+from sklearn.ensemble import RandomForestClassifier
 
-
-def write_dataset_to_file(dataset, filename):
-    f = open(filename)
-    for i in range(len(dataset)): 
-        f.write(str(dataset[0]))
-    f.close()
 
 def split_dataset_paths(dir_path = "", file_types = []):
+
+    """
+    Collects the file names in a array. 
+    The functions returns splited_paths. 
+    """
+
     splited_paths = {}
     paths = os.listdir(dir_path)   
     
@@ -29,33 +42,6 @@ def split_dataset_paths(dir_path = "", file_types = []):
                 splited_paths[type].append(dir_path + paths[file])
 
     return splited_paths 
-
-def OneClass(labels, class_values = []): 
-    """
-      Just includes the class values from the class_values array. 
-      Replaces the class value with new number with same order. 
-      Makes ClassesVsRest. class_values not includer are the rest class. 
-
-    """
-    class_values = np.array(class_values)
-
-    new_class_values = []
-
-    for i in range(len(class_values)): 
-        new_class_values.append(i)
-
-    new_labels = copy.deepcopy(labels)
-
-    for i in range(len(labels)): 
-        for j in range(len(labels[0])): 
-                if(new_labels[i][j] in class_values): 
-                    class_position = np.where(class_values == new_labels[i][j])
-                    new_labels[i][j] = new_class_values[class_position[0][0]]
-                else: 
-                    new_labels[i][j] = len(class_values)
-
-    return new_labels
-
 
 def subFrame(data, labels, x1, x2, y1, y2): 
 
@@ -79,8 +65,13 @@ def subFrame(data, labels, x1, x2, y1, y2):
     return np.array(sub_data), np.array(sub_label)
 
 
-def preprocesing_data(data,labels, shape): 
-    # prepare data
+def preprocessing_data(data,labels, shape): 
+    """
+    Preproccesing the data and labels from a Hyperspectral Image and its Ground Truth. 
+    The shape is the amount of spectral bands in the data. 
+    Returns X,y
+    """
+
     X = data.transpose(0,2,1).reshape((-1,shape))
     y = labels.flatten()
 
@@ -88,32 +79,6 @@ def preprocesing_data(data,labels, shape):
     #X = preprocessing.normalize(X, axis=0) 
     return X,y 
 
-
-def lessBands(data, n_band_dim):
-    import random 
-
-    x_dim = len(data[0])
-    y_dim = len(data)
-    n_bands = len(data[0][0])
-
-    random_bands = []
-    while(len(random_bands) <= n_band_dim):  
-        random_band = random.randint(0,n_bands-1)
-        if((random_band in random_bands) == False): 
-            random_bands.append(random_band)
-
-    new_data = []
-
-    for i in range(y_dim):
-        x_row = [] 
-        for j in range(x_dim): 
-            pixel = []
-            for k in range(n_band_dim):
-                pixel.append(data[i][j][random_bands[k]])
-            x_row.append(pixel)
-        new_data.append(x_row)
-    
-    return np.array(new_data)
 
             
 def combinePictures(data1, labels1, data2, labels2): 
@@ -140,47 +105,15 @@ def combinePictures(data1, labels1, data2, labels2):
     return combinded_data, combinded_labels
 
 
-def combineModels(models, final_estimator): 
-
-    """
-    Combine multiple sklearn models in too one.  
-    """
-
-    from sklearn.ensemble import StackingClassifier
-    stack_models = StackingClassifier(estimators=models)
-    return stack_models
-
-def saveModel(model, path):
-    "Should be saved as 'model_name.sav'"
-    import pickle 
-    pickle.dump(model, open(path, "wb"))
-
-def loadModel(path): 
-    import pickle 
-    return pickle.load(path, "rb")
-    
-def confusionMatrix(data, labels):
-    Xout = stack_models.predict(X)
-
-    plt.imshow(Xout.reshape((200,200)))
-
-    cm = confusion_matrix(labels.flatten(), data, normalize='true')
-
-    plt.imshow(cm, vmax=1, vmin=0) 
-    plt.ylabel('True')
-    plt.xlabel('prediction')
-    plt.colorbar()
-
-def namesOnLabels(labels, labels_name):
-    labels_with_names = []
-    for i in range(len(labels)): 
-        X_labels = []
-        for j in range(len(labels[0])):
-            X_labels.append(labels_name[labels[i][j]])
-        labels_with_names.append(X_labels)  
-    return np.array(labels_with_names)
 
 def classesInLabels(labels): 
+
+    """
+    Collects the classes_ in a label and store it
+    in an array. 
+    Returns the classes_ in the labels. 
+    """
+
     try: 
         classes_ = []
         for i in range(len(labels)): 
@@ -225,6 +158,10 @@ def combineLabelClasses(labels, combining_classes):
 
 
 def flipData(data): 
+    """
+    Used to flip the data image 90 degress. 
+    Returns the data_flipped. 
+    """
 
     data_flipped = []
 
@@ -240,7 +177,8 @@ def flipData(data):
 
 def reshape_sj(data): 
     """
-    Used to reshape the datasets samson and jasper.
+    Used to reshape the dataset Samson and Jasper Ridge. 
+    Return the reshaped_data. 
     """
 
     reshaped_data_buffer = []
@@ -282,36 +220,51 @@ def SupportVectorsSvmBranches(svm_tree_branch):
     return cSB
 
 
-
-def SingleMachineLearningTest(data, label, train_data, train_label, iter): 
-
+def newColorLabels(labels, dimx, dimy, color_label): 
 
     """
-    Test these different machine learning algorithms: 
-        - SVM Linear 1-vs-1 
-        - SVM Linear 1-vs-Rest
+    Define a new color scheme for the labels. 
+    Each classes are defined with the RGB code in hex, 0-255.
+    Color labeling is defined by: color_label = {0 : [r,g,b], ..., N : [r,g,b]}, 
+    with N amount of classes. 
+
+    Returns the new_new_label with a new color scheme. 
+    """
+
+    new_label = copy.deepcopy(labels)
+    new_label = new_label.reshape(dimx, dimy)
+    new_new_label = []
+
+    for i in range(len(new_label)): 
+        x_array = []
+        for j in range(len(new_label[0])): 
+            x_array.append(color_label[new_label[i][j]])
+        new_new_label.append(x_array)
+    
+    return np.array(new_new_label)
+
+
+def SingleMachineLearningTest(data, label, train_data, train_label, iter, kmeans_cluster_number): 
+
+    """
+    Test these different machine learning (ML) algorithms: 
+        - SVM Linear One-vs-One 
+        - SVM Linear One-vs-Rest
         - SVM RBF(Radial Basis Function)
         - KMeans
         - KNearestNeighbor 
-    """
+        - Random Forest
 
+    Each function is provided by the library Sklearn. 
+    The training time, prediction time and overall accuracy are printed to console. 
 
-
-def SingleMachineLearningTest(data, label, train_data, train_label, iter): 
-
-    """
-    Test these different machine learning algorithms: 
-        - SVM Linear 1-vs-1 
-        - SVM Linear 1-vs-Rest
-        - SVM RBF(Radial Basis Function)
-        - KMeans
-        - KNearestNeighbor 
+    - Returns the labeled data for each of the ML algortihms. 
     """
 
     svm_linear_ovo = SVC(kernel="linear",class_weight= "balanced", max_iter=iter, decision_function_shape="ovo")
     svm_linear_ovr = LinearSVC(class_weight= "balanced", max_iter=iter)
     svm_rbf = SVC(kernel="rbf",class_weight= "balanced", max_iter=iter, decision_function_shape="ovr")
-    k_means = KMeans(n_clusters=len(classesInLabels(label)))
+    k_means = KMeans(n_clusters=kmeans_cluster_number, random_state=0)
     k_nearest_neighbor = KNeighborsClassifier(n_neighbors=len(classesInLabels(label)-2))
     random_forest = RandomForestClassifier()
 
@@ -368,7 +321,7 @@ def SingleMachineLearningTest(data, label, train_data, train_label, iter):
 
     stop_time = time.time() 
 
-    print("KNearestNeighbor Training Time: " + str(round(stop_time - start_time, 3)) + "sec.")
+    print("Random Forest Training Time: " + str(round(stop_time - start_time, 3)) + "sec.")
 
     
     #Predict the different models with time. 
@@ -446,15 +399,3 @@ def SingleMachineLearningTest(data, label, train_data, train_label, iter):
     return linear_ovo_yout, linear_ovr_yout, rbf_yout, kmeans_yout, knearest_yout, random_forest_yout
 
 
-def newColorLabels(labels, dim, color_label): 
-    new_label = copy.deepcopy(labels)
-    new_label = new_label.reshape(dim, dim)
-    new_new_label = []
-
-    for i in range(len(new_label)): 
-        x_array = []
-        for j in range(len(new_label[0])): 
-            x_array.append(color_label[new_label[i][j]])
-        new_new_label.append(x_array)
-    
-    return np.array(new_new_label)
