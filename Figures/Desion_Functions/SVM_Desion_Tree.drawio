@@ -1,0 +1,95 @@
+<mxfile host="65bd71144e">
+    <diagram id="F7ulRKgjgNDQQFNuWUBc" name="Page-1">
+        <mxGraphModel dx="644" dy="791" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="5" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="2">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="320" y="200.0000000000001" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="425" y="170"/>
+                            <mxPoint x="320" y="170"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="6" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="2">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="530" y="200.0000000000001" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="425" y="170"/>
+                            <mxPoint x="530" y="170"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="2" value="&lt;i&gt;&lt;font face=&quot;Georgia&quot;&gt;SVM&lt;sub&gt;AB&lt;/sub&gt;&lt;br&gt;{A vs B}&lt;br&gt;&lt;/font&gt;&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="365" y="80" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="320" y="260" as="sourcePoint"/>
+                        <mxPoint x="250" y="300" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="320" y="280"/>
+                            <mxPoint x="250" y="280"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="20" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="530" y="260" as="sourcePoint"/>
+                        <mxPoint x="600" y="300" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="530" y="280"/>
+                            <mxPoint x="600" y="280"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="13" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="250" y="360" as="sourcePoint"/>
+                        <mxPoint x="180" y="390" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="250" y="370"/>
+                            <mxPoint x="180" y="370"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="18" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="600" y="360" as="sourcePoint"/>
+                        <mxPoint x="670" y="390" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="600" y="370"/>
+                            <mxPoint x="670" y="370"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="22" value="&lt;font face=&quot;Georgia&quot;&gt;&lt;i&gt;SVM&lt;sub&gt;A&lt;span style=&quot;font-size: 8px&quot;&gt;0&lt;br&gt;&lt;/span&gt;&lt;/sub&gt;&lt;/i&gt;&lt;/font&gt;&lt;font face=&quot;Georgia&quot;&gt;&lt;i&gt;{A&lt;sub&gt;r &lt;/sub&gt;vs A&lt;sub&gt;0&lt;/sub&gt;}&lt;/i&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="260" y="200" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="23" value="&lt;font face=&quot;Georgia&quot;&gt;&lt;i&gt;SVM&lt;sub&gt;A&lt;span style=&quot;font-size: 8px&quot;&gt;n-1&lt;br&gt;&lt;/span&gt;&lt;/sub&gt;&lt;/i&gt;&lt;/font&gt;&lt;font face=&quot;Georgia&quot;&gt;&lt;i&gt;{A&lt;sub&gt;n-1&amp;nbsp;&lt;/sub&gt;vs A&lt;sub&gt;n&lt;/sub&gt;}&lt;/i&gt;&lt;/font&gt;&lt;i&gt;&lt;font face=&quot;Georgia&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="120" y="390" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="24" value="&lt;font face=&quot;Georgia&quot;&gt;&lt;i&gt;SVM&lt;sub&gt;B&lt;font style=&quot;font-size: 8px&quot;&gt;m&lt;/font&gt;&lt;span style=&quot;font-size: 8px&quot;&gt;-1&lt;br&gt;&lt;/span&gt;&lt;/sub&gt;&lt;/i&gt;&lt;/font&gt;&lt;font face=&quot;Georgia&quot;&gt;&lt;i&gt;{B&lt;sub&gt;m-1&amp;nbsp;&lt;/sub&gt;vs B&lt;sub&gt;m&lt;/sub&gt;}&lt;/i&gt;&lt;/font&gt;&lt;i&gt;&lt;font face=&quot;Georgia&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="610" y="390" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="25" value="&lt;font face=&quot;Georgia&quot;&gt;&lt;i&gt;SVM&lt;sub&gt;B&lt;span style=&quot;font-size: 8px&quot;&gt;0&lt;br&gt;&lt;/span&gt;&lt;/sub&gt;&lt;/i&gt;&lt;/font&gt;&lt;font face=&quot;Georgia&quot;&gt;&lt;i&gt;{B&lt;sub&gt;r&amp;nbsp;&lt;/sub&gt;vs B&lt;sub&gt;0&lt;/sub&gt;}&lt;/i&gt;&lt;/font&gt;&lt;i&gt;&lt;font face=&quot;Georgia&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="470" y="200" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="26" value="" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;fontFamily=Georgia;fontSize=8;" edge="1" parent="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="250" y="350" as="sourcePoint"/>
+                        <mxPoint x="250" y="310" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="27" value="" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;fontFamily=Georgia;fontSize=8;" edge="1" parent="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="600" y="350" as="sourcePoint"/>
+                        <mxPoint x="600" y="310" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
